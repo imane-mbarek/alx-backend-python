@@ -1,0 +1,1 @@
+This project demonstrates how to use Python generators to efficiently handle large datasets from a MySQL database. It simulates real-world tasks such as streaming user data, processing in batches, paginating lazily, and computing aggregate values — all without loading the entire dataset into memory.
