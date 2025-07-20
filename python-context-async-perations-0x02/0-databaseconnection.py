@@ -4,8 +4,8 @@ import MYSQLdb
 class DatabaseConnection:
       def __init__(self , host="localhost" , user="root" , password="imane" , database="ALX_prodev"):
           self.host=host
-          self.user=user
-          self.password=password
+          self.user=user,
+          self.password=password,
           self.database=database
  
 
