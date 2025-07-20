@@ -2,6 +2,10 @@ import sqlite3
 
 
 class ExecuteQuery(self,query , param):
+       def __init__(self, query, param):
+        self.query = query
+        self.param = param
+
       def __enter__(self):
           self.conn=sqlite3.connect("users.db")
           self.cursor=self.conn.cursor()
