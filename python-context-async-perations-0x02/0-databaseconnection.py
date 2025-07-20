@@ -20,6 +20,7 @@ class DatabaseConnection:
          # Création d’un curseur
          self.cursor =self.connection.cursor()
          self self.cursor
+         return self.cursor
 
      def __exit__(self , exc_type , exc_value,traceback):
          if exc_type:
