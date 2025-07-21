@@ -56,7 +56,7 @@ class TestGetJson(unittest.TestCase):
 
              # Vérifie que la réponse est bien celle attendue
              self.assertEqual(result , test_payload)
-
+             mock_get.assert_called_once_with(test_url)
              # Reset du mock pour le prochain test
              mock_get.reset_mock()
 
