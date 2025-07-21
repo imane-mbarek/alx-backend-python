@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))  # ajoute dossier courant en début de path
+
 import unittest
 from parameterized import parameterized
 from utils import access_nested_map
