@@ -70,7 +70,7 @@ class TestGetJson(unittest.TestCase):
 
 
 class TestMemoize(unittest.TestCase):
-      @patck("__main__.TestClass.a_method")
+      @patch("__main__.TestClass.a_method")
       def test_memoize(self, mock_method):
           class TestClass:
 
