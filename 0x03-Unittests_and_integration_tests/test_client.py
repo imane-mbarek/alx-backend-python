@@ -15,7 +15,7 @@ class TestGithubOrgClient(unittest.TestCase):
         ("abc",)
     ])
       @patch('client.get_json')
-      def test_org(self,org_name,mock_get_json):
+      def test_org(self, org_name, mock_get_json):
 
           # Préparer une fausse réponse de get_json
           expected_result={"login":org_name, "id":123}
