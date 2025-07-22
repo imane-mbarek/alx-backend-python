@@ -66,6 +66,6 @@ class TestGithubOrgClient(unittest.TestCase):
             # ✅ Vérifie que le résultat est une liste des noms de repo
             self.assertEqual(result, ['repo1', 'repo2'])
 
-            # ✅ Vérifie que les deux mocks ont bien été appelés
+            # ✅ Vérifi que les deux mocks ont bien été appelés
             mock_url.assert_called_once()
             mock_get_json.assert_called_once_with("https://api.github.com/orgs/google/repos")
