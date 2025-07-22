@@ -23,15 +23,15 @@ class TestGithubOrgClient(unittest.TestCase):
 
           # Vérifier que get_json a été appelée une fois avec l’URL correcte
           mock_get_json.assert_called_once_with(
-    f"https://api.github.com/orgs/{org_name}")
+          f"https://api.github.com/orgs/{org_name}")
 
           # Vérifier que le retour est correct
           self.assertEqual(result, expected_result)
 
 
 
-
-     def test_public_repos_url(self):
+      
+      def test_public_repos_url(self):
         """Test that _public_repos_url returns the correct URL from org"""
          with patch.object(GithubOrgClient, 'org', new_callable=Mock) as mock_org:
               expected_url = "https://api.github.com/orgs/google/repos"
@@ -45,23 +45,23 @@ class TestGithubOrgClient(unittest.TestCase):
 
 
 
-    @patch('client.get_json')
-    def test_public_repos(self, mock_get_json):
+      @patch('client.get_json')
+      def test_public_repos(self, mock_get_json):
         """Test GithubOrgClient.public_repos returns expected repo list"""
-        test_payload = [
-            {"name": "repo1"},
-            {"name": "repo2"},
-        ]
-        mock_get_json.return_value = test_payload
+          test_payload = [
+              {"name": "repo1"},
+              {"name": "repo2"},
+          ]
+          mock_get_json.return_value = test_payload
 
-        with patch(
+          with patch(
                 'client.GithubOrgClient._public_repos_url',
                 new_callable=PropertyMock,
                 return_value="https://api.github.com/orgs/testorg/repos"
-        ) as mock_url:
-            client = GithubOrgClient("testorg")
-            repos = client.public_repos()
-            self.assertEqual(repos, ["repo1", "repo2"])
+          ) as mock_url:
+              client = GithubOrgClient("testorg")
+              repos = client.public_repos()
+              self.assertEqual(repos, ["repo1", "repo2"])
 
-            mock_get_json.assert_called_once()
-            mock_url.assert_called_once()
+              mock_get_json.assert_called_once()
+              mock_url.assert_called_once()
