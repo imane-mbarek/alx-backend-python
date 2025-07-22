@@ -48,24 +48,23 @@ class TestGithubOrgClient(unittest.TestCase):
 
 
 
-      @patch('client.get_json')
-      def test_public_repos(self, mock_get_json):
-         # 👇 Simuler les données JSON retournées par get_json
-         payload = [
-            {'name': 'repo1'},
-            {'name': 'repo2'}
-         ]
-         mock_get_json.return_value = payload
+    @patch('client.get_json')
+    def test_public_repos(self, mock_get_json):
+        """Test GithubOrgClient.public_repos returns expected repo list"""
+        test_payload = [
+            {"name": "repo1"},
+            {"name": "repo2"},
+        ]
+        mock_get_json.return_value = test_payload
 
-         # 👇 Simuler _public_repos_url avec un context manager
-         with patch.object(GithubOrgClient, "_public_repos_url", new_callable=PropertyMock) as mock_url:
-              mock_url.return_value = "https://api.github.com/orgs/google/repos"
-              client = GithubOrgClient("google")
-              result = client.public_repos()
+        with patch(
+                'client.GithubOrgClient._public_repos_url',
+                new_callable=PropertyMock,
+                return_value="https://api.github.com/orgs/testorg/repos"
+        ) as mock_url:
+            client = GithubOrgClient("testorg")
+            repos = client.public_repos()
+            self.assertEqual(repos, ["repo1", "repo2"])
 
-            # ✅ Vérifie que le résultat est une liste des noms de repo
-            self.assertEqual(result, ['repo1', 'repo2'])
-
-            # ✅ Vérifi que les deux mocks ont bien été appelés
+            mock_get_json.assert_called_once()
             mock_url.assert_called_once()
-            mock_get_json.assert_called_once_with("https://api.github.com/orgs/google/repos")
