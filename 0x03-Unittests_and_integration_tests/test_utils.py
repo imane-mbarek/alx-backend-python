@@ -63,3 +63,30 @@ class TestGetJson(unittest.TestCase):
 
         # Test that the output of get_json is equal to test_payload
         self.assertEqual(result, test_payload)
+
+
+
+
+
+
+class TestMemoize(unittest.TestCase):
+      @patck("__main__.TestClass.a_method")
+      def test_memoize(self, mock_method):
+          class TestClass:
+
+                def a_method(self):
+                return 42
+
+                @memoize
+                def a_property(self):
+                return self.a_method()
+
+
+          # Création de l’objet
+          obj = TestClass()
+          result1=obj.a_property
+          result2=obj.a_property
+
+          self.assertEqual(result1,42)
+          self.assertEqual(result2,42)
+          mock_method.assert_called_once()
