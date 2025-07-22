@@ -3,11 +3,10 @@
 
 import unittest
 from parameterized import parameterized
-from utils import access_nested_map
-from unittest.mock import patch , Mock 
+from unittest.mock import patch , Mock
 from utils import get_json
 from utils import memoize
-
+from utils import access_nested_map
 
 class TestAccessNestedMap(unittest.TestCase):
 
@@ -63,6 +62,9 @@ class TestGetJson(unittest.TestCase):
 
 
 
+"""
+Tests for utils.memoize decorator.
+"""
 
 
 
