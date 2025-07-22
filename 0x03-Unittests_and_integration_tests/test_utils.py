@@ -83,8 +83,8 @@ class TestMemoize(unittest.TestCase):
             obj = TestClass()
 
             # Appel de a_property deux fois
-            result1 = obj.a_property()
-            result2 = obj.a_property()
+            result1 = obj.a_property
+            result2 = obj.a_property
 
             # Vérifie que le résultat est correct
             self.assertEqual(result1, 42)
