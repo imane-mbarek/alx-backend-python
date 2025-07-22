@@ -70,9 +70,7 @@ class TestGetJson(unittest.TestCase):
 
 
 class TestMemoize(unittest.TestCase):
-      @patch("__main__.TestClass.a_method")
-      def test_memoize(self, mock_method):
-          class TestClass:
+      class TestClass:
 
                 def a_method(self):
                 return 42
@@ -82,6 +80,8 @@ class TestMemoize(unittest.TestCase):
                 return self.a_method()
 
 
+      @patch("__main__.TestClass.a_method")
+      def test_memoize(self, mock_method):
           # Création de l’objet
           obj = TestClass()
           result1=obj.a_property
