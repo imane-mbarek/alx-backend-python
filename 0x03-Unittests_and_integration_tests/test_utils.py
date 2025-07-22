@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))  # ajoute dossier courant en début de path
 
 import unittest
 from parameterized import parameterized
@@ -92,4 +89,3 @@ class TestMemoize(unittest.TestCase):
 
             # Vérifie que a_method n’a été appelé qu’une seule fois
             mock_method.assert_called_once()
-
