@@ -18,7 +18,7 @@ class TestGithubOrgClient(unittest.TestCase):
       def test_org(self, org_name, mock_get_json):
 
           # Préparer une fausse réponse de get_json
-          expected_result={"login":org_name, "id":123}
+          expected_result={"login":org_name}
           mock_get_json.return_value = expected_result
 
           # Initialiser le client et appeler .org
