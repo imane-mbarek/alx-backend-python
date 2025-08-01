@@ -1,69 +1,132 @@
+# messaging_app/chats/permissions.py
 from rest_framework import permissions
-from .models import Conversation
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import BasePermission
 
-class IsParticipant(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.participants.filter(user_id=request.user.user_id).exists()
-
-
-class IsParticipantOfConversation(permissions.BasePermission):
+class IsAuthenticated(permissions.IsAuthenticated):
     """
-    Allow only participants of a conversation to access it
+    Ensures only authenticated users can access the API.
+    This overrides DRF's default to provide clearer messaging.
     """
-    
+    message = 'Only authenticated users can access this resource.'
+
     def has_permission(self, request, view):
-        # Ensure user is authenticated
-        if not request.user.is_authenticated:
-            raise PermissionDenied("Authentication required")
-            
-        # For message creation, check conversation participation
-        if view.action == 'create':
-            conversation_id = view.kwargs.get('conversation_pk')
-            try:
-                conversation = Conversation.objects.get(id=conversation_id)
-                if request.user not in conversation.participants.all():
-                    raise PermissionDenied("You are not a participant of this conversation")
-            except Conversation.DoesNotExist:
-                raise PermissionDenied("Conversation not found")
-        return True
+        return bool(request.user and request.user.is_authenticated)
+
+
+class IsParticipant(BasePermission):
+    """
+    Checks if user is a participant in the conversation.
+    Applies to all message operations (send, view, update, delete).
+    """
+    message = 'You must be a participant of this conversation.'
 
     def has_object_permission(self, request, view, obj):
-        # Ensure user is authenticated
-        if not request.user.is_authenticated:
-            raise PermissionDenied("Authentication required")
-            
-        # For PUT, PATCH, DELETE - verify user is participant
+        # For Message objects
+        if hasattr(obj, 'conversation'):
+            return request.user in obj.conversation.participants.all()
+        # For Conversation objects
+        elif hasattr(obj, 'participants'):
+            return request.user in obj.participants.all()
+        return False
+
+
+class IsMessageOwner(BasePermission):
+    """
+    Checks if the user is the owner of the message.
+    """
+    message = 'You must be the message owner to perform this action.'
+
+    def has_object_permission(self, request, view, obj):
+        return obj.sender == request.user
+
+
+class IsParticipantOrAdmin(BasePermission):
+    """
+    Allows access to participants or admin users.
+    """
+    message = 'You must be a participant or admin to access this resource.'
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_staff:
+            return True
+        # For Message objects
+        if hasattr(obj, 'conversation'):
+            return request.user in obj.conversation.participants.all()
+        # For Conversation objects
+        elif hasattr(obj, 'participants'):
+            return request.user in obj.participants.all()
+        return False
+
+
+class IsConversationParticipant(BasePermission):
+    """
+    Specifically checks if user is a participant of the conversation.
+    """
+    message = 'You must be a participant of this conversation.'
+
+    def has_object_permission(self, request, view, obj):
+        return request.user in obj.participants.all()
+
+
+class IsMessageOwnerOrParticipant(BasePermission):
+    """
+    Combines ownership and participation checks for messages.
+    - Allows participants to view messages
+    - Only allows message owner to modify/delete
+    """
+    message = 'You must be the message owner to perform this action.'
+
+    def has_object_permission(self, request, view, obj):
+        # Always allow safe methods (GET, HEAD, OPTIONS) for participants
+        if request.method in permissions.SAFE_METHODS:
+            return request.user in obj.conversation.participants.all()
+
+        # Only allow modification by the sender
+        return obj.sender == request.user
+
+
+class ReadOnlyOrIsParticipant(BasePermission):
+    """
+    Allows read-only access to all participants,
+    but restricts write operations to specific conditions.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Allow GET, HEAD, OPTIONS for all participants
+        if request.method in permissions.SAFE_METHODS:
+            return request.user in obj.conversation.participants.all()
+
+        # Only allow PUT, PATCH, DELETE for message owner
         if request.method in ['PUT', 'PATCH', 'DELETE']:
-            if request.user not in obj.conversation.participants.all():
-                raise PermissionDenied("You are not a participant of this conversation")
-        return True
+            return obj.sender == request.user
 
-# class IsParticipantOfConversation(permissions.BasePermission):
-#     """
-#     Allow only participants of a conversation to access it
-#     """
-#     def has_permission(self, request, view):
-#         # Ensure user is authenticated
-#         if not request.user.is_authenticated:
-#             return False
-            
-#         # For message creation, check conversation participation
-#         if view.action == 'create':
-#             conversation_id = view.kwargs.get('conversation_pk')
-#             try:
-#                 conversation = Conversation.objects.get(id=conversation_id)
-#                 return request.user in conversation.participants.all()
-#             except Conversation.DoesNotExist:
-#                 return False
-#         return True
+        return False
 
-#     def has_object_permission(self, request, view, obj):
-#         # Ensure user is authenticated
-#         if not request.user.is_authenticated:
-#             return False
-            
-#         # For PUT, PATCH, DELETE - verify user is participant
-#         if request.method in ['PUT', 'PATCH', 'DELETE']:
-#             return request.user in obj.conversation.participants.all()
-#         return True
+
+class ConversationPermissions(BasePermission):
+    """
+    Special permissions for conversation operations:
+    - Anyone can create conversations
+    - Only participants can view
+    - Only participants can add other participants
+    - No one can delete conversations (or implement your business logic)
+    """
+    def has_permission(self, request, view):
+        # Allow conversation creation
+        if request.method == 'POST':
+            return True
+        return super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        # Allow all participants to view
+        if request.method in permissions.SAFE_METHODS:
+            return request.user in obj.participants.all()
+
+        # Special handling for participant addition
+        if request.method in ['PUT', 'PATCH']:
+            return request.user in obj.participants.all()
+
+        # By default, no deletion allowed
+        if request.method == 'DELETE':
+            return False
+
+        return False

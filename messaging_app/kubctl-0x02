@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Deploy both blue and green versions of the Django app
+echo "Applying blue deployment..."
+kubectl apply -f messaging_app/blue_deployment.yaml
+
+echo "Applying green deployment..."
+kubectl apply -f messaging_app/green_deployment.yaml
+
+# Apply the service (by default points to blue)
+echo "Applying service pointing to blue version..."
+kubectl apply -f messaging_app/kubeservice.yaml
+
+# Wait a bit for pods to spin up
+echo "Waiting for pods to start..."
+sleep 10
+
+echo "Listing all messaging-app pods:"
+kubectl get pods -l app=messaging-app
+
+# Show logs of the green version pods
+echo "Checking logs of green version pods..."
+GREEN_PODS=$(kubectl get pods -l version=green -o name)
+for pod in $GREEN_PODS; do
+    echo "Logs for $pod:"
+    kubectl logs "$pod"
+done
+
+echo "✅ Blue-Green deployments created. Update 'kubeservice.yaml' to point to green when ready to switch traffic."

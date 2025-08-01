@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo "Starting rolling update of blue deployment..."
+
+# Apply the updated blue deployment
+kubectl apply -f messaging_app/blue_deployment.yaml
+
+echo "Monitoring rollout status..."
+kubectl rollout status deployment/messaging-blue &
+
+# Background curl check
+echo "Sending continuous curl requests to monitor availability..."
+kubectl port-forward service/messaging-service 8000:8000 &
+PORT_PID=$!
+
+# Wait for port-forward to establish
+sleep 3
+
+# Run curl loop to detect disruption
+for i in {1..15}; do
+  echo -n "[$(date +%T)] "
+  curl -s http://localhost:8000/ | grep -o "DOCTYPE\|Django\|Error" || echo "No response"
+  sleep 1
+done
+
+# Clean up port-forward
+kill $PORT_PID
+
+echo "Listing current pods after rollout:"
+kubectl get pods -l app=messaging-app
+
+echo "✅ Rolling update complete."

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Scale the Django messaging app to 3 replicas
+
+DEPLOYMENT_NAME="messaging-app-deployment"
+
+echo "Scaling deployment '$DEPLOYMENT_NAME' to 3 replicas..."
+kubectl scale deployment "$DEPLOYMENT_NAME" --replicas=3
+
+echo "Waiting for pods to scale up..."
+sleep 10
+
+echo "Listing running pods:"
+kubectl get pods -l app=messaging-app
+
+echo "Checking resource usage (make sure metrics-server is installed)..."
+kubectl top pods || echo "⚠️  metrics-server may not be installed."
+
+# Load test with wrk
+echo "Running load test using wrk..."
+
+# Port-forward to access the app (assumes Django runs on port 8000)
+kubectl port-forward service/messaging-app-service 8000:8000 &
+PORT_FWD_PID=$!
+
+# Wait for port-forward to establish
+sleep 5
+
+# Run wrk (adjust duration, threads, and connections as needed)
+wrk -t4 -c20 -d10s http://localhost:8000/ || echo "⚠️  wrk not installed or app not reachable."
+
+# Clean up port-forward
+kill $PORT_FWD_PID
+
+echo "✅ Scaling and testing complete."

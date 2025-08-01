@@ -1,13 +1,23 @@
 import django_filters
+from django.db import models
 from .models import Message
-from django.utils import timezone
 
 
 class MessageFilter(django_filters.FilterSet):
-    sender = django_filters.CharFilter(field_name='sender__user_id')
-    start_date = django_filters.DateTimeFilter(field_name='sent_at', lookup_expr='gte')
-    end_date = django_filters.DateTimeFilter(field_name='sent_at', lookup_expr='lte')
+    conversation = django_filters.NumberFilter(field_name='conversation__id')
+    sender = django_filters.NumberFilter(field_name='sender__id')
+    receiver = django_filters.NumberFilter(field_name='receiver__id')
+    created_after = django_filters.DateTimeFilter(field_name='created_at', lookup_expr='gte')
+    created_before = django_filters.DateTimeFilter(field_name='created_at', lookup_expr='lte')
 
     class Meta:
         model = Message
-        fields = ['sender', 'start_date', 'end_date']
+        fields = {
+            'content': ['icontains'],
+        }
+
+    @property
+    def qs(self):
+        parent = super().qs
+        # Add any additional filtering logic here if needed
+        return parent
